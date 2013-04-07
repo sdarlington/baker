@@ -80,10 +80,8 @@
 }
 - (BOOL)postPurchaseReceipt:(NSString *)receipt ofType:(NSString *)type {
     if ([self canPostPurchaseReceipt]) {
-        NSDictionary *params = [NSDictionary dictionaryWithObjectsAndKeys:
-                                type, @"type",
-                                receipt, @"receipt_data",
-                                nil];
+        NSDictionary *params = @{@"type": type,
+                                @"receipt_data": receipt};
 
         return [self postParams:params toURL:[self purchaseConfirmationURL]];
     }
@@ -97,7 +95,7 @@
 }
 - (BOOL)postAPNSToken:(NSString *)apnsToken {
     if ([self canPostAPNSToken]) {
-        NSDictionary *params = [NSDictionary dictionaryWithObject:apnsToken forKey:@"apns_token"];
+        NSDictionary *params = @{@"apns_token": apnsToken};
         
         return [self postParams:params toURL:[self postAPNSTokenURL]];
     }
@@ -123,12 +121,12 @@
 #pragma mark - Helpers
 
 - (NSURLRequest *)requestForURL:(NSURL *)url method:(NSString *)method {
-    return [self requestForURL:url parameters:[NSDictionary dictionary] method:method cachePolicy:NSURLRequestUseProtocolCachePolicy];
+    return [self requestForURL:url parameters:@{} method:method cachePolicy:NSURLRequestUseProtocolCachePolicy];
 }
 - (NSURLRequest *)requestForURL:(NSURL *)url parameters:(NSDictionary *)parameters method:(NSString *)method cachePolicy:(NSURLRequestCachePolicy)cachePolicy {
     NSMutableDictionary *requestParams = [NSMutableDictionary dictionaryWithDictionary:parameters];
-    [requestParams setObject:[Utils appID] forKey:@"app_id"];
-    [requestParams setObject:[BakerAPI UUID] forKey:@"user_id"];
+    requestParams[@"app_id"] = [Utils appID];
+    requestParams[@"user_id"] = [BakerAPI UUID];
 
     NSURL *requestURL = [self replaceParameters:requestParams inURL:url];
     NSMutableURLRequest *request = nil;
@@ -171,7 +169,7 @@
 - (NSData *)getFromURL:(NSURL *)url cachePolicy:(NSURLRequestCachePolicy)cachePolicy {
     NSError *error = nil;
     NSHTTPURLResponse *response = nil;
-    NSURLRequest *request = [self requestForURL:url parameters:[NSDictionary dictionary] method:@"GET" cachePolicy:cachePolicy];
+    NSURLRequest *request = [self requestForURL:url parameters:@{} method:@"GET" cachePolicy:cachePolicy];
 
     NSData *data = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
 

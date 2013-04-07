@@ -48,7 +48,7 @@
 + (void)initialize {
     // Set user agent (the only problem is that we can't modify the User-Agent later in the program)
     // We use a more browser-like User-Agent in order to allow browser detection scripts to run (like Tumult Hype).
-    NSDictionary *userAgent = [[NSDictionary alloc] initWithObjectsAndKeys:@"Mozilla/5.0 (compatible; BakerFramework) AppleWebKit/533.00+ (KHTML, like Gecko) Mobile", @"UserAgent", nil];
+    NSDictionary *userAgent = @{@"UserAgent": @"Mozilla/5.0 (compatible; BakerFramework) AppleWebKit/533.00+ (KHTML, like Gecko) Mobile"};
     [[NSUserDefaults standardUserDefaults] registerDefaults:userAgent];
 }
 
@@ -66,10 +66,10 @@
     [application registerForRemoteNotificationTypes:UIRemoteNotificationTypeNewsstandContentAvailability];
 
     // Check if the app is runnig in response to a notification
-    NSDictionary *payload = [launchOptions objectForKey:UIApplicationLaunchOptionsRemoteNotificationKey];
+    NSDictionary *payload = launchOptions[UIApplicationLaunchOptionsRemoteNotificationKey];
     if (payload) {
-        NSDictionary *aps = [payload objectForKey:@"aps"];
-        if (aps && [aps objectForKey:@"content-available"]) {
+        NSDictionary *aps = payload[@"aps"];
+        if (aps && aps[@"content-available"]) {
 
             __block UIBackgroundTaskIdentifier backgroundTask = [application beginBackgroundTaskWithExpirationHandler:^{
                 [application endBackgroundTask:backgroundTask];
@@ -77,7 +77,7 @@
             }];
 
             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-                [self applicationWillHandleNewsstandNotificationOfContent:[payload objectForKey:@"content-name"]];
+                [self applicationWillHandleNewsstandNotificationOfContent:payload[@"content-name"]];
                 [application endBackgroundTask:backgroundTask];
                 backgroundTask = UIBackgroundTaskInvalid;
             });
@@ -137,9 +137,9 @@
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo
 {
     #ifdef BAKER_NEWSSTAND
-    NSDictionary *aps = [userInfo objectForKey:@"aps"];
-    if (aps && [aps objectForKey:@"content-available"]) {
-        [self applicationWillHandleNewsstandNotificationOfContent:[userInfo objectForKey:@"content-name"]];
+    NSDictionary *aps = userInfo[@"aps"];
+    if (aps && aps[@"content-available"]) {
+        [self applicationWillHandleNewsstandNotificationOfContent:userInfo[@"content-name"]];
     }
     #endif
 }
@@ -156,7 +156,7 @@
             }
         }
     } else {
-        BakerIssue *targetIssue = [issuesManager.issues objectAtIndex:0];
+        BakerIssue *targetIssue = (issuesManager.issues)[0];
         [targetIssue download];
     }
     #endif

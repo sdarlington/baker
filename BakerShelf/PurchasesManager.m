@@ -118,11 +118,11 @@
     
     NSMutableSet *ids = [NSMutableSet setWithCapacity:response.products.count];
     for (SKProduct *skProduct in response.products) {
-        [self.products setObject:skProduct forKey:skProduct.productIdentifier];
+        (self.products)[skProduct.productIdentifier] = skProduct;
         [ids addObject:skProduct.productIdentifier];
     }
     
-    NSDictionary *userInfo = [NSDictionary dictionaryWithObject:ids forKey:@"ids"];
+    NSDictionary *userInfo = @{@"ids": ids};
     [[NSNotificationCenter defaultCenter] postNotificationName:@"notification_products_retrieved" object:self userInfo:userInfo];
 
 }
@@ -131,14 +131,14 @@
     NSLog(@"App Store request failure: %@", error);
 
     if (_enableProductRequestFailureNotifications) {
-        NSDictionary *userInfo = [NSDictionary dictionaryWithObject:error forKey:@"error"];
+        NSDictionary *userInfo = @{@"error": error};
         [[NSNotificationCenter defaultCenter] postNotificationName:@"notification_products_request_failed" object:self userInfo:userInfo];
     }
 
 }
 
 - (NSString *)priceFor:(NSString *)productID {
-    SKProduct *product = [products objectForKey:productID];
+    SKProduct *product = products[productID];
     if (product) {
         [_numberFormatter setLocale:product.priceLocale];
         return [_numberFormatter stringFromNumber:product.price];
@@ -189,7 +189,7 @@
     NSString *productID = transaction.payment.productIdentifier;
     if ([productID isEqualToString:FREE_SUBSCRIPTION_PRODUCT_ID]) {
         return @"free-subscription";
-    } else if ([AUTO_RENEWABLE_SUBSCRIPTION_PRODUCT_IDS containsObject:productID]) {
+    } else if ([@[] containsObject:productID]) {
         return @"auto-renewable-subscription";
     } else {
         return @"issue";
@@ -210,11 +210,11 @@
             // TODO: handle error
 
             if (purchasesResponse) {
-                NSArray *purchasedIssues = [purchasesResponse objectForKey:@"issues"];
-                self.subscribed = [[purchasesResponse objectForKey:@"subscribed"] boolValue];
+                NSArray *purchasedIssues = purchasesResponse[@"issues"];
+                self.subscribed = [purchasesResponse[@"subscribed"] boolValue];
 
                 [productIDs enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
-                    [_purchases setObject:[NSNumber numberWithBool:[purchasedIssues containsObject:obj]] forKey:obj];
+                    _purchases[obj] = @([purchasedIssues containsObject:obj]);
                 }];
             } else {
                 NSLog(@"ERROR: Could not parse response from purchases API call. Received: %@", jsonResponse);
@@ -224,7 +224,7 @@
 }
 
 - (BOOL)isPurchased:(NSString *)productID {
-    id purchased = [_purchases objectForKey:productID];
+    id purchased = _purchases[productID];
     if (purchased) {
         return [purchased boolValue];
     } else {
@@ -264,10 +264,10 @@
 }
 
 - (void)completeTransaction:(SKPaymentTransaction *)transaction {
-    NSDictionary *userInfo = [NSDictionary dictionaryWithObject:transaction forKey:@"transaction"];
+    NSDictionary *userInfo = @{@"transaction": transaction};
     NSString *productId = transaction.payment.productIdentifier;
 
-    if ([productId isEqualToString:FREE_SUBSCRIPTION_PRODUCT_ID] || [AUTO_RENEWABLE_SUBSCRIPTION_PRODUCT_IDS containsObject:productId]) {
+    if ([productId isEqualToString:FREE_SUBSCRIPTION_PRODUCT_ID] || [@[] containsObject:productId]) {
         [[NSNotificationCenter defaultCenter] postNotificationName:@"notification_subscription_purchased" object:self userInfo:userInfo];
     } else if ([self productFor:productId]) {
         [[NSNotificationCenter defaultCenter] postNotificationName:@"notification_issue_purchased" object:self userInfo:userInfo];
@@ -277,10 +277,10 @@
 }
 
 - (void)restoreTransaction:(SKPaymentTransaction *)transaction {
-    NSDictionary *userInfo = [NSDictionary dictionaryWithObject:transaction forKey:@"transaction"];
+    NSDictionary *userInfo = @{@"transaction": transaction};
     NSString *productId = transaction.payment.productIdentifier;
 
-    if ([productId isEqualToString:FREE_SUBSCRIPTION_PRODUCT_ID] || [AUTO_RENEWABLE_SUBSCRIPTION_PRODUCT_IDS containsObject:productId]) {
+    if ([productId isEqualToString:FREE_SUBSCRIPTION_PRODUCT_ID] || [@[] containsObject:productId]) {
         [[NSNotificationCenter defaultCenter] postNotificationName:@"notification_subscription_restored" object:self userInfo:userInfo];
     } else if ([self productFor:productId]) {
         [[NSNotificationCenter defaultCenter] postNotificationName:@"notification_issue_restored" object:self userInfo:userInfo];
@@ -293,10 +293,10 @@
 -(void)failedTransaction:(SKPaymentTransaction *)transaction {
     NSLog(@"Payment transaction failure: %@", transaction.error);
 
-    NSDictionary *userInfo = [NSDictionary dictionaryWithObject:transaction forKey:@"transaction"];
+    NSDictionary *userInfo = @{@"transaction": transaction};
     NSString *productId = transaction.payment.productIdentifier;
 
-    if ([productId isEqualToString:FREE_SUBSCRIPTION_PRODUCT_ID] || [AUTO_RENEWABLE_SUBSCRIPTION_PRODUCT_IDS containsObject:productId]) {
+    if ([productId isEqualToString:FREE_SUBSCRIPTION_PRODUCT_ID] || [@[] containsObject:productId]) {
         [[NSNotificationCenter defaultCenter] postNotificationName:@"notification_subscription_failed" object:self userInfo:userInfo];
     } else {
         [[NSNotificationCenter defaultCenter] postNotificationName:@"notification_issue_purchase_failed" object:self userInfo:userInfo];
@@ -316,7 +316,7 @@
 - (void)paymentQueue:(SKPaymentQueue *)queue restoreCompletedTransactionsFailedWithError:(NSError *)error {
     NSLog(@"Transaction restore failure: %@", error);
 
-    NSDictionary *userInfo = [NSDictionary dictionaryWithObject:error forKey:@"error"];
+    NSDictionary *userInfo = @{@"error": error};
 
     [[NSNotificationCenter defaultCenter] postNotificationName:@"notification_restore_failed" object:self userInfo:userInfo];
 }
@@ -324,7 +324,7 @@
 #pragma mark - Products
 
 - (SKProduct *)productFor:(NSString *)productID {
-    return [self.products objectForKey:productID];
+    return (self.products)[productID];
 }
 
 #pragma mark - Subscriptions

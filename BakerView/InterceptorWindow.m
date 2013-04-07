@@ -49,7 +49,7 @@
         {
             UITouch *touch = touches.anyObject;
 
-            NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:touch, @"touch", nil];
+            NSDictionary *userInfo = @{@"touch": touch};
             [[NSNotificationCenter defaultCenter] postNotificationName:@"notification_touch_intercepted" object:nil userInfo:userInfo];
         }
     }

@@ -84,7 +84,7 @@
 
         } else if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"5.1")) {
 
-            BOOL success = [[NSURL fileURLWithPath:path] setResourceValue:[NSNumber numberWithBool: YES] forKey:NSURLIsExcludedFromBackupKey error:nil];
+            BOOL success = [[NSURL fileURLWithPath:path] setResourceValue:@YES forKey:NSURLIsExcludedFromBackupKey error:nil];
             if(success) {
                 NSLog(@"Successfully added skip backup attribute to item %@ (iOS >= 5.1)", path);
             }

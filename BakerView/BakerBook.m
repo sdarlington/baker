@@ -146,55 +146,55 @@
 }
 - (BOOL)loadBookData:(NSDictionary *)bookData
 {
-    if (![self validateBookJSON:bookData withRequirements:[NSArray arrayWithObjects:@"title", @"author", @"url", @"contents", nil]]) {
+    if (![self validateBookJSON:bookData withRequirements:@[@"title", @"author", @"url", @"contents"]]) {
         return NO;
     }
 
-    self.hpub  = [bookData objectForKey:@"hpub"];
-    self.title = [bookData objectForKey:@"title"];
-    self.date  = [bookData objectForKey:@"date"];
+    self.hpub  = bookData[@"hpub"];
+    self.title = bookData[@"title"];
+    self.date  = bookData[@"date"];
 
-    if ([[bookData objectForKey:@"author"] isKindOfClass:[NSArray class]]) {
-        self.author = [bookData objectForKey:@"author"];
+    if ([bookData[@"author"] isKindOfClass:[NSArray class]]) {
+        self.author = bookData[@"author"];
     } else {
-        self.author = [NSArray arrayWithObject:[bookData objectForKey:@"author"]];
+        self.author = @[bookData[@"author"]];
     }
 
-    if ([[bookData objectForKey:@"creator"] isKindOfClass:[NSArray class]]) {
-        self.creator = [bookData objectForKey:@"creator"];
-    } else if([[bookData objectForKey:@"creator"] isKindOfClass:[NSString class]]) {
-        self.creator = [NSArray arrayWithObject:[bookData objectForKey:@"creator"]];
+    if ([bookData[@"creator"] isKindOfClass:[NSArray class]]) {
+        self.creator = bookData[@"creator"];
+    } else if([bookData[@"creator"] isKindOfClass:[NSString class]]) {
+        self.creator = @[bookData[@"creator"]];
     }
 
-    self.publisher = [bookData objectForKey:@"publisher"];
+    self.publisher = bookData[@"publisher"];
 
-    self.url   = [bookData objectForKey:@"url"];
-    self.cover = [bookData objectForKey:@"cover"];
+    self.url   = bookData[@"url"];
+    self.cover = bookData[@"cover"];
 
-    self.orientation = [bookData objectForKey:@"orientation"];
-    self.zoomable    = [bookData objectForKey:@"zoomable"];
+    self.orientation = bookData[@"orientation"];
+    self.zoomable    = bookData[@"zoomable"];
 
     // TODO: create an array of n BakerPage objects
-    self.contents = [bookData objectForKey:@"contents"];
+    self.contents = bookData[@"contents"];
 
-    self.bakerBackground               = [bookData objectForKey:@"-baker-background"];
-    self.bakerBackgroundImagePortrait  = [bookData objectForKey:@"-baker-background-image-portrait"];
-    self.bakerBackgroundImageLandscape = [bookData objectForKey:@"-baker-background-image-landscape"];
-    self.bakerPageNumbersColor         = [bookData objectForKey:@"-baker-page-numbers-color"];
-    self.bakerPageNumbersAlpha         = [bookData objectForKey:@"-baker-page-numbers-alpha"];
-    self.bakerPageScreenshots          = [bookData objectForKey:@"-baker-page-screenshots"];
+    self.bakerBackground               = bookData[@"-baker-background"];
+    self.bakerBackgroundImagePortrait  = bookData[@"-baker-background-image-portrait"];
+    self.bakerBackgroundImageLandscape = bookData[@"-baker-background-image-landscape"];
+    self.bakerPageNumbersColor         = bookData[@"-baker-page-numbers-color"];
+    self.bakerPageNumbersAlpha         = bookData[@"-baker-page-numbers-alpha"];
+    self.bakerPageScreenshots          = bookData[@"-baker-page-screenshots"];
 
-    self.bakerRendering          = [bookData objectForKey:@"-baker-rendering"];
-    self.bakerVerticalBounce     = [bookData objectForKey:@"-baker-vertical-bounce"];
-    self.bakerVerticalPagination = [bookData objectForKey:@"-baker-vertical-pagination"];
-    self.bakerPageTurnTap        = [bookData objectForKey:@"-baker-page-turn-tap"];
-    self.bakerPageTurnSwipe      = [bookData objectForKey:@"-baker-page-turn-swipe"];
-    self.bakerMediaAutoplay      = [bookData objectForKey:@"-baker-media-autoplay"];
+    self.bakerRendering          = bookData[@"-baker-rendering"];
+    self.bakerVerticalBounce     = bookData[@"-baker-vertical-bounce"];
+    self.bakerVerticalPagination = bookData[@"-baker-vertical-pagination"];
+    self.bakerPageTurnTap        = bookData[@"-baker-page-turn-tap"];
+    self.bakerPageTurnSwipe      = bookData[@"-baker-page-turn-swipe"];
+    self.bakerMediaAutoplay      = bookData[@"-baker-media-autoplay"];
 
-    self.bakerIndexWidth  = [bookData objectForKey:@"-baker-index-width"];
-    self.bakerIndexHeight = [bookData objectForKey:@"-baker-index-height"];
-    self.bakerIndexBounce = [bookData objectForKey:@"-baker-index-bounce"];
-    self.bakerStartAtPage = [bookData objectForKey:@"-baker-start-at-page"];
+    self.bakerIndexWidth  = bookData[@"-baker-index-width"];
+    self.bakerIndexHeight = bookData[@"-baker-index-height"];
+    self.bakerIndexBounce = bookData[@"-baker-index-bounce"];
+    self.bakerStartAtPage = bookData[@"-baker-start-at-page"];
 
     [self loadBookJSONDefault];
 
@@ -203,7 +203,7 @@
 - (void)loadBookJSONDefault
 {
     if (self.hpub == nil) {
-        self.hpub = [NSNumber numberWithInt:1];
+        self.hpub = @1;
     }
 
     if (self.bakerBackground == nil) {
@@ -213,35 +213,35 @@
         self.bakerPageNumbersColor = @"#ffffff";
     }
     if (self.bakerPageNumbersAlpha == nil) {
-        self.bakerPageNumbersAlpha = [NSNumber numberWithFloat:0.3];
+        self.bakerPageNumbersAlpha = @0.3f;
     }
 
     if (self.bakerRendering == nil) {
         self.bakerRendering = @"screenshots";
     }
     if (self.bakerVerticalBounce == nil) {
-        self.bakerVerticalBounce = [NSNumber numberWithBool:YES];
+        self.bakerVerticalBounce = @YES;
     }
     if (self.bakerVerticalPagination == nil) {
-        self.bakerVerticalPagination = [NSNumber numberWithBool:NO];
+        self.bakerVerticalPagination = @NO;
     }
 
     if (self.bakerPageTurnTap == nil) {
-        self.bakerPageTurnTap = [NSNumber numberWithBool:YES];
+        self.bakerPageTurnTap = @YES;
     }
 
     if (self.bakerPageTurnSwipe == nil) {
-        self.bakerPageTurnSwipe = [NSNumber numberWithBool:YES];
+        self.bakerPageTurnSwipe = @YES;
     }
     if (self.bakerMediaAutoplay == nil) {
-        self.bakerMediaAutoplay = [NSNumber numberWithBool:NO];
+        self.bakerMediaAutoplay = @NO;
     }
 
     if (self.bakerIndexBounce == nil) {
-        self.bakerIndexBounce = [NSNumber numberWithBool:NO];
+        self.bakerIndexBounce = @NO;
     }
     if (self.bakerStartAtPage == nil) {
-        self.bakerStartAtPage = [NSNumber numberWithInt:1];
+        self.bakerStartAtPage = @1;
     }
 }
 
@@ -251,7 +251,7 @@
 - (BOOL)validateBookJSON:(NSDictionary *)bookData withRequirements:(NSArray *)requirements
 {
     for (NSString *param in requirements) {
-        if ([bookData objectForKey:param] == nil) {
+        if (bookData[param] == nil) {
             NSLog(@"Error: param \"%@\" is required but it's missing", param);
             return NO;
         }
@@ -260,7 +260,7 @@
     for (NSString *param in bookData) {
         NSLog(@"Validating book JSON param \"%@\"", param);
 
-        id obj = [bookData objectForKey:param];
+        id obj = bookData[param];
         if ([obj isKindOfClass:[NSArray class]] && ![self validateArray:(NSArray *)obj forParam:param]) {
             return NO;
         } else if ([obj isKindOfClass:[NSString class]] && ![self validateString:(NSString *)obj forParam:param]) {
@@ -274,9 +274,9 @@
 }
 - (BOOL)validateArray:(NSArray *)array forParam:(NSString *)param
 {
-    NSArray *shouldBeArray  = [NSArray arrayWithObjects:@"author",
+    NSArray *shouldBeArray  = @[@"author",
                                                         @"creator",
-                                                        @"contents", nil];
+                                                        @"contents"];
 
 
     if (![self matchParam:param againstParamsArray:shouldBeArray]) {
@@ -293,7 +293,7 @@
             NSLog(@"Error: param \"author\" is required but it's empty");
             return NO;
         } else if ([param isEqualToString:@"contents"]) {
-            if ([obj isKindOfClass:[NSDictionary class]] && ![self validateBookJSON:(NSDictionary *)obj withRequirements:[NSArray arrayWithObjects:@"url", nil]]) {
+            if ([obj isKindOfClass:[NSDictionary class]] && ![self validateBookJSON:(NSDictionary *)obj withRequirements:@[@"url"]]) {
                 NSLog(@"Error: param \"contents\" is required but it's content doesn't validate");
                 return NO;
             }
@@ -307,7 +307,7 @@
 }
 - (BOOL)validateString:(NSString *)string forParam:(NSString *)param
 {
-    NSArray *shouldBeString = [NSArray arrayWithObjects:@"title",
+    NSArray *shouldBeString = @[@"title",
                                                         @"date",
                                                         @"author",
                                                         @"creator",
@@ -320,7 +320,7 @@
                                                         @"-baker-background-image-landscape",
                                                         @"-baker-page-numbers-color",
                                                         @"-baker-page-screenshots",
-                                                        @"-baker-rendering", nil];
+                                                        @"-baker-rendering"];
 
 
     if (![self matchParam:param againstParamsArray:shouldBeString]) {
@@ -345,7 +345,7 @@
 }
 - (BOOL)validateNumber:(NSNumber *)number forParam:(NSString *)param
 {
-    NSArray *shouldBeNumber = [NSArray arrayWithObjects:@"hpub",
+    NSArray *shouldBeNumber = @[@"hpub",
                                                         @"zoomable",
                                                         @"-baker-page-numbers-alpha",
                                                         @"-baker-vertical-bounce",
@@ -356,7 +356,7 @@
                                                         @"-baker-index-width",
                                                         @"-baker-index-height",
                                                         @"-baker-index-bounce",
-                                                        @"-baker-start-at-page", nil];
+                                                        @"-baker-start-at-page"];
 
 
     if (![self matchParam:param againstParamsArray:shouldBeNumber]) {
@@ -387,10 +387,10 @@
     }
 
     self.path = bookPath;
-    self.isBundled = [NSNumber numberWithBool:bundled];
+    self.isBundled = @(bundled);
 
     self.screenshotsPath = [bookPath stringByAppendingPathComponent:self.bakerPageScreenshots];
-    self.screenshotsWritable = [NSNumber numberWithBool:YES];
+    self.screenshotsWritable = @YES;
 
     if (bundled) {
         if (![fileManager fileExistsAtPath:self.screenshotsPath]) {
@@ -398,7 +398,7 @@
             NSString *writableBookPath = @"writableBookPath";
             self.screenshotsPath = [writableBookPath stringByAppendingPathComponent:self.bakerPageScreenshots];
         } else {
-            self.screenshotsWritable = [NSNumber numberWithBool:NO];
+            self.screenshotsWritable = @NO;
         }
     }
 
