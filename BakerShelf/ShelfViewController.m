@@ -138,10 +138,11 @@
 
     self.background = [[UIImageView alloc] init];
 
-    self.gridView = [[AQGridView alloc] init];
+    self.gridView = [[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:[[[UICollectionViewFlowLayout alloc] init] autorelease]];
     self.gridView.dataSource = self;
     self.gridView.delegate = self;
     self.gridView.backgroundColor = [UIColor clearColor];
+    [self.gridView registerClass:[UICollectionViewCell class] forCellWithReuseIdentifier:@"cellIdentifier"];
 
     [self.view addSubview:self.background];
     [self.view addSubview:self.gridView];
@@ -260,27 +261,29 @@
 
 #pragma mark - Shelf data source
 
-- (NSUInteger)numberOfItemsInGridView:(AQGridView *)aGridView
-{
+- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
+    return 1;
+}
+
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
     return [issueViewControllers count];
 }
-- (AQGridViewCell *)gridView:(AQGridView *)aGridView cellForItemAtIndex:(NSUInteger)index
-{
+
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     CGSize cellSize = [IssueViewController getIssueCellSize];
     CGRect cellFrame = CGRectMake(0, 0, cellSize.width, cellSize.height);
 
     static NSString *cellIdentifier = @"cellIdentifier";
-    AQGridViewCell *cell = (AQGridViewCell *)[self.gridView dequeueReusableCellWithIdentifier:cellIdentifier];
+    UICollectionViewCell* cell = [self.gridView dequeueReusableCellWithReuseIdentifier:cellIdentifier forIndexPath:indexPath];
 	if (cell == nil)
 	{
-		cell = [[[AQGridViewCell alloc] initWithFrame:cellFrame reuseIdentifier:cellIdentifier] autorelease];
-		cell.selectionStyle = AQGridViewCellSelectionStyleNone;
+		UICollectionViewCell* cell = [[[UICollectionViewCell alloc] initWithFrame:cellFrame] autorelease];
 
         cell.contentView.backgroundColor = [UIColor clearColor];
         cell.backgroundColor = [UIColor clearColor];
 	}
 
-    IssueViewController *controller = [self.issueViewControllers objectAtIndex:index];
+    IssueViewController *controller = [self.issueViewControllers objectAtIndex:indexPath.row];
     UIView *removableIssueView = [cell.contentView viewWithTag:42];
     if (removableIssueView) {
         [removableIssueView removeFromSuperview];
@@ -289,8 +292,8 @@
 
     return cell;
 }
-- (CGSize)portraitGridCellSizeForGridView:(AQGridView *)aGridView
-{
+
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
     return [IssueViewController getIssueCellSize];
 }
 
@@ -308,6 +311,7 @@
             issue.price = [shelfStatus priceFor:issue.productID];
         }
 
+        [self.gridView performBatchUpdates:^{
         [self.issues enumerateObjectsUsingBlock:^(id object, NSUInteger idx, BOOL *stop) {
             // NOTE: this block changes the issueViewController array while looping
 
@@ -320,12 +324,13 @@
             if (!existingIvc || ![[existingIvc issue].ID isEqualToString:issue.ID]) {
                 IssueViewController *ivc = [self createIssueViewControllerWithIssue:issue];
                 [self.issueViewControllers insertObject:ivc atIndex:idx];
-                [self.gridView insertItemsAtIndices:[NSIndexSet indexSetWithIndex:idx] withAnimation:AQGridViewItemAnimationNone];
+                [self.gridView insertItemsAtIndexPaths:[NSArray arrayWithObject:[NSIndexPath indexPathForItem:idx inSection:0] ] ];
             } else {
                 existingIvc.issue = issue;
                 [existingIvc refreshContentWithCache:NO];
             }
-        }];
+        }];}
+        completion:nil];
 
         [purchasesManager retrievePricesFor:issuesManager.productIDs andEnableFailureNotifications:NO];
     }
@@ -549,10 +554,10 @@
 
 #pragma mark - Navigation management
 
-- (void)gridView:(AQGridView *)myGridView didSelectItemAtIndex:(NSUInteger)index
-{
-    [myGridView deselectItemAtIndex:index animated:NO];
+- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
+    [collectionView deselectItemAtIndexPath:indexPath animated:YES];
 }
+
 - (void)readIssue:(BakerIssue *)issue
 {
     BakerBook *book = nil;
