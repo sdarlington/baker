@@ -121,7 +121,6 @@
                                           cancelButtonTitle:buttonTitle
                                           otherButtonTitles:nil];
     [alert show];
-    [alert release];
 }
 
 @end

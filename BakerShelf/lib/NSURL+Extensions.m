@@ -42,7 +42,6 @@
     NSString *URLString = [[NSString alloc] initWithFormat:@"%@%@%@", [self absoluteString],
                            [self query] ? @"&" : @"?", queryString];
     NSURL *theURL = [NSURL URLWithString:URLString];
-    [URLString release];
     return theURL;
 }
 

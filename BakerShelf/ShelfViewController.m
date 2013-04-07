@@ -79,9 +79,9 @@
         #endif
 
         api = [BakerAPI sharedInstance];
-        issuesManager = [[IssuesManager sharedInstance] retain];
+        issuesManager = [IssuesManager sharedInstance];
 
-        self.shelfStatus = [[[ShelfStatus alloc] init] retain];
+        self.shelfStatus = [[ShelfStatus alloc] init];
         self.issueViewControllers = [[NSMutableArray alloc] init];
         self.supportedOrientation = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"UISupportedInterfaceOrientations"];
 
@@ -106,28 +106,6 @@
     return self;
 }
 
-#pragma mark - Memory management
-
-- (void)dealloc
-{
-    [gridView release];
-    [issueViewControllers release];
-    [issues release];
-    [subscribeButton release];
-    [refreshButton release];
-    [shelfStatus release];
-    [subscriptionsActionSheet release];
-    [supportedOrientation release];
-    [self.blockingProgressView release];
-    [issuesManager release];
-    [notRecognisedTransactions release];
-    #ifdef BAKER_NEWSSTAND
-    [purchasesManager release];
-    #endif
-
-    [super dealloc];
-}
-
 #pragma mark - View lifecycle
 
 - (void)viewDidLoad
@@ -138,7 +116,7 @@
 
     self.background = [[UIImageView alloc] init];
 
-    self.gridView = [[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:[[[UICollectionViewFlowLayout alloc] init] autorelease]];
+    self.gridView = [[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:[[UICollectionViewFlowLayout alloc] init]];
     self.gridView.dataSource = self;
     self.gridView.delegate = self;
     self.gridView.backgroundColor = [UIColor clearColor];
@@ -151,18 +129,16 @@
     [self.gridView reloadData];
 
     #ifdef BAKER_NEWSSTAND
-    self.refreshButton = [[[UIBarButtonItem alloc]
+    self.refreshButton = [[UIBarButtonItem alloc]
                                        initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh
                                        target:self
-                                       action:@selector(handleRefresh:)]
-                                      autorelease];
+                                       action:@selector(handleRefresh:)];
 
-    self.subscribeButton = [[[UIBarButtonItem alloc]
+    self.subscribeButton = [[UIBarButtonItem alloc]
                              initWithTitle: NSLocalizedString(@"SUBSCRIBE_BUTTON_TEXT", nil)
                              style:UIBarButtonItemStylePlain
                              target:self
-                             action:@selector(handleSubscribeButtonPressed:)]
-                            autorelease];
+                             action:@selector(handleSubscribeButtonPressed:)];
 
     self.blockingProgressView = [[UIAlertView alloc]
                                  initWithTitle:@"Processing..."
@@ -174,7 +150,6 @@
     spinner.center = CGPointMake(139.5, 75.5); // .5 so it doesn't blur
     [self.blockingProgressView addSubview:spinner];
     [spinner startAnimating];
-    [spinner release];
 
     NSMutableSet *subscriptions = [NSMutableSet setWithArray:AUTO_RENEWABLE_SUBSCRIPTION_PRODUCT_IDS];
     if ([FREE_SUBSCRIPTION_PRODUCT_ID length] > 0 && ![purchasesManager isPurchased:FREE_SUBSCRIPTION_PRODUCT_ID]) {
@@ -254,7 +229,7 @@
 }
 - (IssueViewController *)createIssueViewControllerWithIssue:(BakerIssue *)issue
 {
-    IssueViewController *controller = [[[IssueViewController alloc] initWithBakerIssue:issue] autorelease];
+    IssueViewController *controller = [[IssueViewController alloc] initWithBakerIssue:issue];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleReadIssue:) name:@"read_issue_request" object:controller];
     return controller;
 }
@@ -277,7 +252,7 @@
     UICollectionViewCell* cell = [self.gridView dequeueReusableCellWithReuseIdentifier:cellIdentifier forIndexPath:indexPath];
 	if (cell == nil)
 	{
-		UICollectionViewCell* cell = [[[UICollectionViewCell alloc] initWithFrame:cellFrame] autorelease];
+		UICollectionViewCell* cell = [[UICollectionViewCell alloc] initWithFrame:cellFrame];
 
         cell.contentView.backgroundColor = [UIColor clearColor];
         cell.backgroundColor = [UIColor clearColor];
@@ -348,7 +323,6 @@
     if (subscriptionsActionSheet.visible) {
         [subscriptionsActionSheet dismissWithClickedButtonIndex:(subscriptionsActionSheet.numberOfButtons - 1) animated:YES];
     } else {
-        [self.subscriptionsActionSheet release];
         self.subscriptionsActionSheet = [self buildSubscriptionsActionSheet];
         [subscriptionsActionSheet showFromBarButtonItem:self.subscribeButton animated:YES];
     }
@@ -565,7 +539,7 @@
 
     #ifdef BAKER_NEWSSTAND
     if ([status isEqual:@"opening"]) {
-        book = [[[BakerBook alloc] initWithBookPath:issue.path bundled:NO] autorelease];
+        book = [[BakerBook alloc] initWithBookPath:issue.path bundled:NO];
         if (book) {
             [self pushViewControllerWithBook:book];
         } else {
@@ -596,7 +570,6 @@
 {
     BakerViewController *bakerViewController = [[BakerViewController alloc] initWithBook:book];
     [self.navigationController pushViewController:bakerViewController animated:YES];
-    [bakerViewController release];
 }
 
 #pragma mark - Buttons management

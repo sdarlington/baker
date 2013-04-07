@@ -50,17 +50,8 @@
     // We use a more browser-like User-Agent in order to allow browser detection scripts to run (like Tumult Hype).
     NSDictionary *userAgent = [[NSDictionary alloc] initWithObjectsAndKeys:@"Mozilla/5.0 (compatible; BakerFramework) AppleWebKit/533.00+ (KHTML, like Gecko) Mobile", @"UserAgent", nil];
     [[NSUserDefaults standardUserDefaults] registerDefaults:userAgent];
-    [userAgent release];
 }
 
-- (void)dealloc
-{
-    [window release];
-    [rootViewController release];
-    [rootNavigationController release];
-
-    [super dealloc];
-}
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
@@ -93,7 +84,7 @@
         }
     }
 
-    self.rootViewController = [[[ShelfViewController alloc] init] autorelease];
+    self.rootViewController = [[ShelfViewController alloc] init];
 
     #else
 
@@ -112,7 +103,7 @@
     [navigationBar setBackgroundImage:[UIImage imageNamed:@"navigation-bar-bg.png"] forBarMetrics:UIBarMetricsDefault];
     [navigationBar setTintColor:[UIColor clearColor]];
 
-    self.window = [[[InterceptorWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
+    self.window = [[InterceptorWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     self.window.backgroundColor = [UIColor whiteColor];
 
     self.window.rootViewController = self.rootNavigationController;

@@ -52,13 +52,6 @@
     }
     return self;
 }
-- (void)dealloc
-{
-    [book release];
-    [indexScrollView release];
-
-    [super dealloc];
-}
 
 #pragma mark - View lifecycle
 
@@ -77,11 +70,10 @@
     self.view = webView;
     for (UIView *subView in webView.subviews) {
         if ([subView isKindOfClass:[UIScrollView class]]) {
-            indexScrollView = [(UIScrollView *)subView retain];
+            indexScrollView = (UIScrollView *)subView;
             break;
         }
     }
-    [webView release];
 
     [self loadContent];
 }
