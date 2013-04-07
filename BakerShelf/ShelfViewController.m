@@ -287,25 +287,25 @@
         }
 
         [self.gridView performBatchUpdates:^{
-        [self.issues enumerateObjectsUsingBlock:^(id object, NSUInteger idx, BOOL *stop) {
-            // NOTE: this block changes the issueViewController array while looping
-
-            IssueViewController *existingIvc = nil;
-            if (idx < [self.issueViewControllers count]) {
-                existingIvc = (self.issueViewControllers)[idx];
-            }
-
-            BakerIssue *issue = (BakerIssue*)object;
-            if (!existingIvc || ![[existingIvc issue].ID isEqualToString:issue.ID]) {
-                IssueViewController *ivc = [self createIssueViewControllerWithIssue:issue];
-                [self.issueViewControllers insertObject:ivc atIndex:idx];
-                [self.gridView insertItemsAtIndexPaths:@[[NSIndexPath indexPathForItem:idx inSection:0]] ];
-            } else {
-                existingIvc.issue = issue;
-                [existingIvc refreshContentWithCache:NO];
-            }
-        }];}
-        completion:nil];
+            [self.issues enumerateObjectsUsingBlock:^(id object, NSUInteger idx, BOOL *stop) {
+                // NOTE: this block changes the issueViewController array while looping
+                
+                IssueViewController *existingIvc = nil;
+                if (idx < [self.issueViewControllers count]) {
+                    existingIvc = (self.issueViewControllers)[idx];
+                }
+                
+                BakerIssue *issue = (BakerIssue*)object;
+                if (!existingIvc || ![[existingIvc issue].ID isEqualToString:issue.ID]) {
+                    IssueViewController *ivc = [self createIssueViewControllerWithIssue:issue];
+                    [self.issueViewControllers insertObject:ivc atIndex:idx];
+                    [self.gridView insertItemsAtIndexPaths:@[[NSIndexPath indexPathForItem:idx inSection:0]] ];
+                } else {
+                    existingIvc.issue = issue;
+                    [existingIvc refreshContentWithCache:NO];
+                }
+            }];
+        } completion:nil];
 
         [purchasesManager retrievePricesFor:issuesManager.productIDs andEnableFailureNotifications:NO];
     }
