@@ -197,7 +197,7 @@
     if ([error code] == -1009) {
         UILabel *errorLabel = [[UILabel alloc] initWithFrame:self.webView.frame];
         errorLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        errorLabel.textAlignment = UITextAlignmentCenter;
+        errorLabel.textAlignment = NSTextAlignmentCenter;
         errorLabel.textColor = [UIColor grayColor];
         errorLabel.text = NSLocalizedString(@"WEB_MODAL_FAILURE_MESSAGE", nil);
         errorLabel.numberOfLines = 1;
