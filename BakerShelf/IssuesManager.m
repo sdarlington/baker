@@ -64,7 +64,7 @@
 }
 
 #ifdef BAKER_NEWSSTAND
--(BOOL)refresh {
+-(void)refresh:(void (^)(BOOL)) callback {
     NSData *json = [self getShelfJSON];
 
     if (json) {
@@ -87,9 +87,14 @@
             return [second compare:first];
         }];
 
-        return YES;
-    } else {
-        return NO;
+        if (callback) {
+            callback(YES);
+        }
+    }
+    else {
+        if (callback) {
+            callback(NO);
+        }
     }
 }
 
