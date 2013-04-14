@@ -147,7 +147,7 @@
 {
     #ifdef BAKER_NEWSSTAND
     IssuesManager *issuesManager = [IssuesManager sharedInstance];
-    [issuesManager refresh];
+    [issuesManager refresh:nil];
 
     if (contentName) {
         for (BakerIssue *issue in issuesManager.issues) {
