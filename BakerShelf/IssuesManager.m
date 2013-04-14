@@ -100,37 +100,37 @@
 
 -(void)getShelfJSON:(void (^)(NSData*)) callback {
     BakerAPI *api = [BakerAPI sharedInstance];
-    NSData *json = [api getShelfJSON];
-
-    NSError *cachedShelfError = nil;
-
-    if (json) {
-        // Cache the shelf manifest
-        [[NSFileManager defaultManager] createFileAtPath:self.shelfManifestPath contents:nil attributes:nil];
-        [json writeToFile:self.shelfManifestPath
-                  options:NSDataWritingAtomic
-                    error:&cachedShelfError];
-        if (cachedShelfError) {
-            NSLog(@"Error caching Shelf manifest: %@", cachedShelfError);
-        } else {
-            [Utils addSkipBackupAttributeToItemAtPath:self.shelfManifestPath];
-        }
-    } else {
-        if ([[NSFileManager defaultManager] fileExistsAtPath:self.shelfManifestPath]) {
-            NSLog(@"Loading cached Shelf manifest from %@", self.shelfManifestPath);
-            json = [NSData dataWithContentsOfFile:self.shelfManifestPath options:NSDataReadingMappedIfSafe error:&cachedShelfError];
+    [api getShelfJSON:^(NSData* json) {
+        NSError *cachedShelfError = nil;
+        
+        if (json) {
+            // Cache the shelf manifest
+            [[NSFileManager defaultManager] createFileAtPath:self.shelfManifestPath contents:nil attributes:nil];
+            [json writeToFile:self.shelfManifestPath
+                      options:NSDataWritingAtomic
+                        error:&cachedShelfError];
             if (cachedShelfError) {
-                NSLog(@"Error loading cached Shelf manifest: %@", cachedShelfError);
+                NSLog(@"Error caching Shelf manifest: %@", cachedShelfError);
+            } else {
+                [Utils addSkipBackupAttributeToItemAtPath:self.shelfManifestPath];
             }
         } else {
-            NSLog(@"No cached Shelf manifest found at %@", self.shelfManifestPath);
-            json = nil;
+            if ([[NSFileManager defaultManager] fileExistsAtPath:self.shelfManifestPath]) {
+                NSLog(@"Loading cached Shelf manifest from %@", self.shelfManifestPath);
+                json = [NSData dataWithContentsOfFile:self.shelfManifestPath options:NSDataReadingMappedIfSafe error:&cachedShelfError];
+                if (cachedShelfError) {
+                    NSLog(@"Error loading cached Shelf manifest: %@", cachedShelfError);
+                }
+            } else {
+                NSLog(@"No cached Shelf manifest found at %@", self.shelfManifestPath);
+                json = nil;
+            }
         }
-    }
-
-    if (callback) {
-        callback(json);
-    };
+        
+        if (callback) {
+            callback(json);
+        };
+    }];
 }
 
 -(void)updateNewsstandIssuesList:(NSArray *)issuesList {
