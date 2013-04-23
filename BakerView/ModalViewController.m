@@ -125,7 +125,7 @@
 
 
     // ****** Add items to toolbar
-    NSArray *items = @[btnClose, btnGoBack, btnGoForward, btnSpinner, spacer, btnAction];
+    NSArray *items = [NSArray arrayWithObjects: btnClose, btnGoBack, btnGoForward, btnSpinner, spacer, btnAction, nil];
     [toolbar setItems:items animated:NO];
 
 

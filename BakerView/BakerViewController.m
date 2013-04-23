@@ -76,7 +76,7 @@
         supportedOrientation = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"UISupportedInterfaceOrientations"];
 
 
-        NSString *cachePath = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES)[0];
+        NSString *cachePath = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
         if (![[NSFileManager defaultManager] fileExistsAtPath:cachePath]) {
             [[NSFileManager defaultManager] createDirectoryAtPath:cachePath withIntermediateDirectories:YES attributes:nil error:nil];
         }
@@ -210,7 +210,7 @@
 
         [self forceOrientationUpdate];
         [self willRotateToInterfaceOrientation:self.interfaceOrientation duration:0];
-        [self performSelector:@selector(hideBars:) withObject:@YES afterDelay:0.5];
+        [self performSelector:@selector(hideBars:) withObject:[NSNumber numberWithBool:YES] afterDelay:0.5];
 
         // Condition to make sure we only call startReading the first time this callback is invoked
         // Fixes page reload on coming back from fullscreen video (#611)
@@ -259,7 +259,7 @@
     } else if (bakerStartAtPage > 0) {
         currentPageNumber = MIN(totalPages, bakerStartAtPage);
     }
-    bookStatus.page = @(currentPageNumber);
+    bookStatus.page = [NSNumber numberWithInt:currentPageNumber];
 
     // ****** SET SCREENSHOTS FOLDER
     NSString *screenshotFolder = book.bakerPageScreenshots;
@@ -310,7 +310,7 @@
 
     for (NSMutableDictionary *details in pageDetails) {
         for (NSString *key in details) {
-            UIView *value = details[key];
+            UIView *value = [details objectForKey:key];
             [value removeFromSuperview];
         }
     }
@@ -324,7 +324,7 @@
         if ([page isKindOfClass:[NSString class]]) {
             pageFile = [book.path stringByAppendingPathComponent:page];
         } else if ([page isKindOfClass:[NSDictionary class]]) {
-            pageFile = [book.path stringByAppendingPathComponent:page[@"url"]];
+            pageFile = [book.path stringByAppendingPathComponent:[page objectForKey:@"url"]];
         }
 
         if ([[NSFileManager defaultManager] fileExistsAtPath:pageFile]) {
@@ -418,7 +418,7 @@
 
 
         // ****** Title
-        PageTitleLabel *title = [[PageTitleLabel alloc]initWithFile:pages[i] color:foregroundColor alpha:[book.bakerPageNumbersAlpha floatValue]];
+        PageTitleLabel *title = [[PageTitleLabel alloc]initWithFile:[pages objectAtIndex: i] color:foregroundColor alpha:[book.bakerPageNumbersAlpha floatValue]];
         [title setX:(pageWidth * i + ((pageWidth - title.frame.size.width) / 2)) Y:(pageHeight / 2 + 20)];
         [scrollView addSubview:title];
 
@@ -441,7 +441,7 @@
 }
 - (void)updateBookLayout {
     NSLog(@"    Prevent page from changing until layout is updated");
-    [self lockPage:@YES];
+    [self lockPage:[NSNumber numberWithBool:YES]];
     [self showPageDetails];
 
     if ([book.bakerRendering isEqualToString:@"screenshots"]) {
@@ -459,7 +459,7 @@
     [scrollView scrollRectToVisible:[self frameForPage:currentPageNumber] animated:NO];
 
     NSLog(@"    Unlock page changing");
-    [self lockPage:@NO];
+    [self lockPage:[NSNumber numberWithBool:NO]];
 }
 - (void)adjustScrollViewPosition {
     int scrollViewY = 0;
@@ -506,19 +506,19 @@
     // TODO: IS THIS NEEDED ?
     for (NSMutableDictionary *details in pageDetails) {
         for (NSString *key in details) {
-            UIView *value = details[key];
+            UIView *value = [details objectForKey:key];
             value.hidden = YES;
         }
     }
 
     for (int i = 0; i < totalPages; i++) {
 
-        if (pageDetails.count > i && pageDetails[i] != nil) {
+        if (pageDetails.count > i && [pageDetails objectAtIndex:i] != nil) {
 
-            NSDictionary *details = [NSDictionary dictionaryWithDictionary:pageDetails[i]];
+            NSDictionary *details = [NSDictionary dictionaryWithDictionary:[pageDetails objectAtIndex:i]];
 
             for (NSString *key in details) {
-                UIView *value = details[key];
+                UIView *value = [details objectForKey:key];
                 if (value != nil) {
 
                     CGRect frame = value.frame;
@@ -618,14 +618,14 @@
 
         tapNumber = tapNumber + (lastPageNumber - currentPageNumber);
 
-        [self hideBars:@YES];
+        [self hideBars:[NSNumber numberWithBool:YES]];
         [scrollView scrollRectToVisible:[self frameForPage:currentPageNumber] animated:YES];
 
         [self gotoPageDelayer];
 
         pageChanged = YES;
     }
-    bookStatus.page = @(currentPageNumber);
+    bookStatus.page = [NSNumber numberWithInt:currentPageNumber];
 
     return pageChanged;
 }
@@ -642,7 +642,7 @@
 }
 - (void)gotoPage {
 
-    NSString *path = [NSString stringWithString:pages[currentPageNumber - 1]];
+    NSString *path = [NSString stringWithString:[pages objectAtIndex:currentPageNumber - 1]];
     if ([[NSFileManager defaultManager] fileExistsAtPath:path] && tapNumber != 0) {
 
         NSLog(@"• Goto page: book/%@", [[NSFileManager defaultManager] displayNameAtPath:path]);
@@ -700,8 +700,8 @@
 
                     // Adjust pages slot in the stack to reflect the webviews pointer change
                     for (int i = 0; i < [toLoad count]; i++) {
-                        tmpSlot =  -1 * [[toLoad[i] valueForKey:@"slot"] intValue];
-                        toLoad[i][@"slot"] = @(tmpSlot);
+                        tmpSlot =  -1 * [[[toLoad objectAtIndex:i] valueForKey:@"slot"] intValue];
+                        [[toLoad objectAtIndex:i] setObject:[NSNumber numberWithInt:tmpSlot] forKey:@"slot"];
                     }
 
                     [currPage removeFromSuperview];
@@ -728,7 +728,7 @@
 
                     // Adjust pages slot in the stack to reflect the webviews pointer change
                     for (int i = 0; i < [toLoad count]; i++) {
-                        tmpSlot = [[toLoad[i] valueForKey:@"slot"] intValue];
+                        tmpSlot = [[[toLoad objectAtIndex:i] valueForKey:@"slot"] intValue];
                         if (direction < 0) {
                             if (tmpSlot == +1) {
                                 tmpSlot = 0;
@@ -746,7 +746,7 @@
                                 tmpSlot = -1;
                             }
                         }
-                        toLoad[i][@"slot"] = @(tmpSlot);
+                        [[toLoad objectAtIndex:i] setObject:[NSNumber numberWithInt:tmpSlot] forKey:@"slot"];
                     }
 
                     // Since we are not loading anything we have to reset the delayer flag
@@ -763,7 +763,7 @@
 
                     // REMOVE OTHER NEXT page from toLoad stack
                     for (int i = 0; i < [toLoad count]; i++) {
-                        if ([[toLoad[i] valueForKey:@"slot"] intValue] == +1) {
+                        if ([[[toLoad objectAtIndex:i] valueForKey:@"slot"] intValue] == +1) {
                             [toLoad removeObjectAtIndex:i];
                         }
                     }
@@ -777,7 +777,7 @@
 
                     // REMOVE OTHER PREV page from toLoad stack
                     for (int i = 0; i < [toLoad count]; i++) {
-                        if ([[toLoad[i] valueForKey:@"slot"] intValue] == -1) {
+                        if ([[[toLoad objectAtIndex:i] valueForKey:@"slot"] intValue] == -1) {
                             [toLoad removeObjectAtIndex:i];
                         }
                     }
@@ -801,7 +801,7 @@
             [self updateScreenshots];
 
             if (![self checkScreeshotForPage:currentPageNumber andOrientation:[self getCurrentInterfaceOrientation:self.interfaceOrientation]]) {
-                [self lockPage:@YES];
+                [self lockPage:[NSNumber numberWithBool:YES]];
             }
 
             [self addPageLoading:0];
@@ -828,8 +828,8 @@
 - (void)addPageLoading:(int)slot {
     NSLog(@"• Add page to the loding queue");
 
-    NSArray *objs = @[@(slot), @(currentPageNumber + slot)];
-    NSArray *keys = @[@"slot", @"page"];
+    NSArray *objs = [NSArray arrayWithObjects:[NSNumber numberWithInt:slot], [NSNumber numberWithInt:currentPageNumber + slot], nil];
+    NSArray *keys = [NSArray arrayWithObjects:@"slot", @"page", nil];
 
     if (slot == 0) {
         [toLoad insertObject:[NSMutableDictionary dictionaryWithObjects:objs forKeys:keys] atIndex:0];
@@ -840,8 +840,8 @@
 - (void)handlePageLoading {
     if ([toLoad count] != 0) {
 
-        int slot = [[toLoad[0] valueForKey:@"slot"] intValue];
-        int page = [[toLoad[0] valueForKey:@"page"] intValue];
+        int slot = [[[toLoad objectAtIndex:0] valueForKey:@"slot"] intValue];
+        int page = [[[toLoad objectAtIndex:0] valueForKey:@"page"] intValue];
 
         NSLog(@"• Handle loading of slot %d with page %d", slot, page);
 
@@ -894,14 +894,14 @@
     }
 
 
-    ((UIScrollView *)[webView subviews][0]).pagingEnabled = [book.bakerVerticalPagination boolValue];
+    ((UIScrollView *)[[webView subviews] objectAtIndex:0]).pagingEnabled = [book.bakerVerticalPagination boolValue];
 
     [scrollView addSubview:webView];
     [self loadWebView:webView withPage:page];
 }
 - (BOOL)loadWebView:(UIWebView*)webView withPage:(int)page {
 
-    NSString *path = [NSString stringWithString:pages[page - 1]];
+    NSString *path = [NSString stringWithString:[pages objectAtIndex:page - 1]];
 
     if ([[NSFileManager defaultManager] fileExistsAtPath:path]) {
         NSLog(@"• Loading: book/%@", [[NSFileManager defaultManager] displayNameAtPath:path]);
@@ -925,7 +925,7 @@
     myModalViewController.delegate = self;
 
     // Hide the IndexView before opening modal web view
-    [self hideBars:@YES];
+    [self hideBars:[NSNumber numberWithBool:YES]];
 
     [self presentViewController:myModalViewController animated:YES completion:nil];
 
@@ -945,7 +945,7 @@
 }
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scroll {
     NSLog(@"• Scrollview will begin dragging");
-    [self hideBars:@YES];
+    [self hideBars:[NSNumber numberWithBool:YES]];
 }
 - (void)scrollViewDidEndDragging:(UIScrollView *)scroll willDecelerate:(BOOL)decelerate {
     NSLog(@"• Scrollview did end dragging");
@@ -1081,19 +1081,19 @@
                     // Check array count to see if we have parameters to query
                     if ([tempArray count] == 2)
                     {
-                        NSArray *keyValuePairs = [tempArray[1] componentsSeparatedByString:@"&"];
+                        NSArray *keyValuePairs = [[tempArray objectAtIndex:1] componentsSeparatedByString:@"&"];
 
                         for (NSString *queryString in keyValuePairs) {
                             NSArray *keyValuePair = [queryString componentsSeparatedByString:@"="];
                             if (keyValuePair.count == 2) {
-                                queryDictionary[keyValuePair[0]] = keyValuePair[1];
+                                [queryDictionary setObject:[keyValuePair objectAtIndex:1] forKey:[keyValuePair objectAtIndex:0]];
                             }
                         }
                     }
 
-                    NSString *email = (tempArray[0]) ? tempArray[0] : [url resourceSpecifier];
-                    NSString *subject = queryDictionary[@"subject"];
-                    NSString *body = queryDictionary[@"body"];
+                    NSString *email = ([tempArray objectAtIndex:0]) ? [tempArray objectAtIndex:0] : [url resourceSpecifier];
+                    NSString *subject = [queryDictionary objectForKey:@"subject"];
+                    NSString *body = [queryDictionary objectForKey:@"body"];
 
 
                     if ([MFMailComposeViewController canSendMail])
@@ -1103,7 +1103,7 @@
                         mailer.mailComposeDelegate = self;
                         mailer.modalPresentationStyle = UIModalPresentationPageSheet;
 
-                        [mailer setToRecipients:@[[email stringByReplacingOccurrencesOfString:@"mailto:" withString:@""]]];
+                        [mailer setToRecipients:[NSArray arrayWithObject:[email stringByReplacingOccurrencesOfString:@"mailto:" withString:@""]]];
                         [mailer setSubject:[subject stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
                         [mailer setMessageBody:[body stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] isHTML:NO];
 
@@ -1316,12 +1316,12 @@
 - (void)removeScreenshots {
 
     for (NSNumber *key in attachedScreenshotLandscape) {
-        UIView *value = attachedScreenshotLandscape[key];
+        UIView *value = [attachedScreenshotLandscape objectForKey:key];
         [value removeFromSuperview];
     }
 
     for (NSNumber *key in attachedScreenshotPortrait) {
-        UIView *value = attachedScreenshotPortrait[key];
+        UIView *value = [attachedScreenshotPortrait objectForKey:key];
         [value removeFromSuperview];
     }
 
@@ -1362,10 +1362,10 @@
 
     for (int i = MAX(1, currentPageNumber - MAX_SCREENSHOT_BEFORE_CP); i <= MIN(totalPages, currentPageNumber + MAX_SCREENSHOT_AFTER_CP); i++)
     {
-        NSNumber *num = @(i);
+        NSNumber *num = [NSNumber numberWithInt:i];
         [supportSet addObject:num];
 
-        if ([self checkScreeshotForPage:i andOrientation:interfaceOrientation] && !attachedScreenshot[num]) {
+        if ([self checkScreeshotForPage:i andOrientation:interfaceOrientation] && ![attachedScreenshot objectForKey:num]) {
             [self placeScreenshotForView:nil andPage:i andOrientation:interfaceOrientation];
             [completeSet addObject:num];
         }
@@ -1374,7 +1374,7 @@
     [completeSet minusSet:supportSet];
 
     for (NSNumber *num in completeSet) {
-        [attachedScreenshot[num] removeFromSuperview];
+        [[attachedScreenshot objectForKey:num] removeFromSuperview];
         [attachedScreenshot removeObjectForKey:num];
     }
 
@@ -1417,7 +1417,7 @@
             }
         }
 
-        [self performSelector:@selector(lockPage:) withObject:@NO afterDelay:0.1];
+        [self performSelector:@selector(lockPage:) withObject:[NSNumber numberWithBool:NO] afterDelay:0.1];
     }
 
     if (!currentPageHasChanged && shouldRevealWebView) {
@@ -1427,7 +1427,7 @@
 - (void)placeScreenshotForView:(UIWebView *)webView andPage:(int)pageNumber andOrientation:(NSString *)interfaceOrientation {
 
     int i = pageNumber - 1;
-    NSNumber *num = @(pageNumber);
+    NSNumber *num = [NSNumber numberWithInt:pageNumber];
 
     NSString    *screenshotFile = [cachedScreenshotsPath stringByAppendingPathComponent:[NSString stringWithFormat:@"screenshot-%@-%i.jpg", interfaceOrientation, pageNumber]];
     UIImageView *screenshotView = [[UIImageView alloc] initWithImage:[UIImage imageWithContentsOfFile:screenshotFile]];
@@ -1443,7 +1443,7 @@
     screenshotView.frame = CGRectMake(pageSize.width * i, 0, pageSize.width, pageSize.height);
 
     BOOL alreadyPlaced = NO;
-    UIImageView *oldScreenshot = attachedScreenshot[num];
+    UIImageView *oldScreenshot = [attachedScreenshot objectForKey:num];
 
     if (oldScreenshot) {
         [scrollView addSubview:screenshotView];
@@ -1453,7 +1453,7 @@
         alreadyPlaced = YES;
     }
 
-    attachedScreenshot[num] = screenshotView;
+    [attachedScreenshot setObject:screenshotView forKey:num];
 
     if (webView == nil)
     {
@@ -1485,7 +1485,7 @@
 - (void)handleInterceptedTouch:(NSNotification *)notification {
 
     NSDictionary *userInfo = notification.userInfo;
-    UITouch *touch = userInfo[@"touch"];
+    UITouch *touch = [userInfo objectForKey:@"touch"];
     BOOL shouldPropagateIndexInterceptedTouch = NO;
 
     if (touch.phase == UITouchPhaseBegan) {
@@ -1547,7 +1547,7 @@
 }
 - (void)userDidScroll:(UITouch *)touch {
     NSLog(@"• User scroll");
-    [self hideBars:@YES];
+    [self hideBars:[NSNumber numberWithBool:YES]];
 
     currPage.backgroundColor = webViewBackground;
     currPage.opaque = YES;
@@ -1596,7 +1596,7 @@
 
 }
 - (void)scrollPage:(UIWebView *)webView to:(NSString *)offset animating:(BOOL)animating {
-    [self hideBars:@YES];
+    [self hideBars:[NSNumber numberWithBool:YES]];
 
     NSString *jsCommand = [NSString stringWithFormat:@"window.scrollTo(0,%@);", offset];
     if (animating) {
@@ -1657,7 +1657,7 @@
             [sharedApplication setStatusBarHidden:NO withAnimation:UIStatusBarAnimationSlide];
             [self performSelector:@selector(showNavigationBar) withObject:nil afterDelay:0.1];
         } else {
-            [self hideBars:@YES];
+            [self hideBars:[NSNumber numberWithBool:YES]];
         }
 
         if(![indexViewController isDisabled]) {

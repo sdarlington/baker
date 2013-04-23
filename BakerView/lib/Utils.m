@@ -68,6 +68,7 @@
 	}
 	return nil;
 }
+
 + (BOOL)webViewShouldBePaged:(UIWebView*)webView {
     BOOL shouldBePaged = [[webView stringByEvaluatingJavaScriptFromString:ISPAGED_JS_SNIPPET] boolValue];
     NSLog(@"• Paging for current page is enabled = %d", shouldBePaged);

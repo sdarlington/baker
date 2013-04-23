@@ -449,7 +449,7 @@
     }
 }
 - (void)handleIssuePurchased:(NSNotification *)notification {
-    SKPaymentTransaction *transaction = (notification.userInfo)[@"transaction"];
+    SKPaymentTransaction *transaction = [notification.userInfo objectForKey:@"transaction"];
 
     if ([transaction.payment.productIdentifier isEqualToString:issue.productID]) {
 
@@ -477,7 +477,7 @@
     }
 }
 - (void)handleIssuePurchaseFailed:(NSNotification *)notification {
-    SKPaymentTransaction *transaction = (notification.userInfo)[@"transaction"];
+    SKPaymentTransaction *transaction = [notification.userInfo objectForKey:@"transaction"];
 
     if ([transaction.payment.productIdentifier isEqualToString:issue.productID]) {
         // Show an error, unless it was the user who cancelled the transaction
@@ -496,7 +496,7 @@
 }
 
 - (void)handleIssueRestored:(NSNotification *)notification {
-    SKPaymentTransaction *transaction = (notification.userInfo)[@"transaction"];
+    SKPaymentTransaction *transaction = [notification.userInfo objectForKey:@"transaction"];
 
     if ([transaction.payment.productIdentifier isEqualToString:issue.productID]) {
         [purchasesManager markAsPurchased:transaction.payment.productIdentifier];
@@ -533,8 +533,8 @@
     [self refresh];
 }
 - (void)handleDownloadProgressing:(NSNotification *)notification {
-    float bytesWritten = [(notification.userInfo)[@"totalBytesWritten"] floatValue];
-    float bytesExpected = [(notification.userInfo)[@"expectedTotalBytes"] floatValue];
+    float bytesWritten = [[notification.userInfo objectForKey:@"totalBytesWritten"] floatValue];
+    float bytesExpected = [[notification.userInfo objectForKey:@"expectedTotalBytes"] floatValue];
 
     if ([currentStatus isEqualToString:@"connecting"]) {
         self.issue.transientStatus = BakerIssueTransientStatusDownloading;

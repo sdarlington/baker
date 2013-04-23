@@ -48,7 +48,7 @@
 	// Begin opening
 	zipFile zip = unzOpen((const char*)[path UTF8String]);	
 	if (zip == NULL) {
-		NSDictionary *userInfo = @{NSLocalizedDescriptionKey: @"failed to open zip file"};
+		NSDictionary *userInfo = [NSDictionary dictionaryWithObject:@"failed to open zip file" forKey:NSLocalizedDescriptionKey];
 		if (error) {
 			*error = [NSError errorWithDomain:@"SSZipArchiveErrorDomain" code:-1 userInfo:userInfo];
 		}
@@ -60,7 +60,7 @@
 	
 	// Begin unzipping
 	if (unzGoToFirstFile(zip) != UNZ_OK) {
-		NSDictionary *userInfo = @{NSLocalizedDescriptionKey: @"failed to open first file in zip file"};
+		NSDictionary *userInfo = [NSDictionary dictionaryWithObject:@"failed to open first file in zip file" forKey:NSLocalizedDescriptionKey];
 		if (error) {
 			*error = [NSError errorWithDomain:@"SSZipArchiveErrorDomain" code:-2 userInfo:userInfo];
 		}
@@ -139,7 +139,7 @@
         }
         
 		// Check if it contains directory
-		NSString *strPath = @(filename);
+		NSString *strPath = [NSString stringWithCString:filename encoding:NSUTF8StringEncoding];
 		BOOL isDirectory = NO;
 		if (filename[fileInfo.size_filename-1] == '/' || filename[fileInfo.size_filename-1] == '\\') {
 			isDirectory = YES;
@@ -154,7 +154,7 @@
 		NSString *fullPath = [destination stringByAppendingPathComponent:strPath];
 		NSError *err = nil;
         NSDate *modDate = [[self class] _dateWithMSDOSFormat:(UInt32)fileInfo.dosDate];
-        NSDictionary *directoryAttr = @{NSFileCreationDate: modDate, NSFileModificationDate: modDate};
+        NSDictionary *directoryAttr = [NSDictionary dictionaryWithObjectsAndKeys:modDate, NSFileCreationDate, modDate, NSFileModificationDate, nil];
 		
 		if (isDirectory) {
 			[fileManager createDirectoryAtPath:fullPath withIntermediateDirectories:YES attributes:directoryAttr  error:&err];
@@ -166,7 +166,7 @@
         }
 
         if(!fileIsSymbolicLink)
-            [directoriesModificationDates addObject: @{@"path": fullPath, @"modDate": modDate}];
+            [directoriesModificationDates addObject: [NSDictionary dictionaryWithObjectsAndKeys:fullPath, @"path", modDate, @"modDate", nil]];
 
         if ([fileManager fileExistsAtPath:fullPath] && !isDirectory && !overwrite) {
 			unzCloseCurrentFile(zip);
@@ -193,7 +193,7 @@
                 // Set the original datetime property
                 if (fileInfo.dosDate != 0) {
                     NSDate *orgDate = [[self class] _dateWithMSDOSFormat:(UInt32)fileInfo.dosDate];
-                    NSDictionary *attr = @{NSFileModificationDate: orgDate};
+                    NSDictionary *attr = [NSDictionary dictionaryWithObject:orgDate forKey:NSFileModificationDate];
                     
                     if (attr) {
                         if ([fileManager setAttributes:attr ofItemAtPath:fullPath error:nil] == NO) {
@@ -215,7 +215,7 @@
             while((bytesRead = unzReadCurrentFile(zip, buffer, 4096)) > 0)
             {
                 buffer[bytesRead] = 0;
-                [destinationPath appendString:@((const char*)buffer)];
+                [destinationPath appendString:[NSString stringWithUTF8String:(const char*)buffer]];
             }
             
             //NSLog(@"Symlinking to: %@", destinationPath);
@@ -252,8 +252,8 @@
     // set the modification date on all of the directories.
     NSError * err = nil;
     for (NSDictionary * d in directoriesModificationDates) {
-        if (![[NSFileManager defaultManager] setAttributes:@{NSFileModificationDate: d[@"modDate"]} ofItemAtPath:d[@"path"] error:&err]) {
-            NSLog(@"[SSZipArchive] Set attributes failed for directory: %@.", d[@"path"]);
+        if (![[NSFileManager defaultManager] setAttributes:[NSDictionary dictionaryWithObjectsAndKeys:[d objectForKey:@"modDate"], NSFileModificationDate, nil] ofItemAtPath:[d objectForKey:@"path"] error:&err]) {
+            NSLog(@"[SSZipArchive] Set attributes failed for directory: %@.", [d objectForKey:@"path"]);
         }
         if (err) {
             NSLog(@"[SSZipArchive] Error setting directory file modification date attribute: %@",err.localizedDescription);
